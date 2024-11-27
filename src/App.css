@@ -378,10 +378,15 @@ body {
 
 .reviewScore {
   font-size: 0.7rem;
+  width: 100%;
+  background-color: inherit;
+  border: none;
+  outline: none;
+  color: black;
 }
 
 .scoreButtons {
-  display: flex;
+  display: none;
   flex-direction: column;
   height: 100%;
   width: fit-content;

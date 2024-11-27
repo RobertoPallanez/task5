@@ -11,13 +11,13 @@ function App() {
   const [input, setInput] = useState("");
   const [seed, setSeed] = useState("");
   const [language, setLanguage] = useState(fakerEN);
-  const [sliderValue, setSliderValue] = useState(50);
+  const [sliderValue, setSliderValue] = useState(50); //slider for likes
+  const [slider2Value, setSlider2Value] = useState(50); //slider for reviews
   const [reviewValue, setReviewValue] = useState(5);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [inputSeed, setInputSeed] = useState("");
   const [totalBooks, setTotalBooks] = useState(0);
-  const [enter, setEnter] = useState(false);
   const [isFilterClicked, setIsFilterClicked] = useState(false);
 
   const isFirstRender = useRef(true);
@@ -31,26 +31,33 @@ function App() {
   useEffect(() => {
     if (!loading && isFilterClicked == true) {
       console.log(`Generating books for page: ${page} with seed: ${seed}`);
-      generateBooks(20, language, input, sliderValue);
+      generateBooks(20, language, input, sliderValue, slider2Value);
     }
-  }, [page, input, language, sliderValue, reviewValue]);
+  }, [page, input, language, sliderValue, slider2Value]);
 
-  function generateBooks(numberOfBooks, language, seed, likesValue = 50) {
+  function generateBooks(
+    numberOfBooks,
+    language,
+    seed,
+    likesValue = 50,
+    reviewsValue = 50
+  ) {
     setLoading(true);
-    faker.seed(seed);
     const newBooks = [];
     const currentYear = new Date().getFullYear();
 
     let startingBookNumber = totalBooks === 0 ? 1 : totalBooks + 1;
 
     for (let i = 0; i < numberOfBooks; i++) {
-      const publicationDate = faker.date.between({
+      language.seed(seed + i);
+
+      const publicationDate = language.date.between({
         from: `${currentYear - 50}-01-01`,
         to: `${currentYear}-12-31`,
       });
 
-      const book = {
-        cover: faker.image.urlPicsumPhotos({
+      const baseBook = {
+        cover: language.image.urlPicsumPhotos({
           width: 120,
           height: 200,
           blur: 1,
@@ -67,9 +74,16 @@ function App() {
           max: 5,
           precision: 0.1,
         }),
-        reviews: generateRandomReviews(Math.round(reviewValue), language),
       };
-      newBooks.push(book);
+
+      language.seed(seed + i + 1000);
+      const reviews = Array.from({ length: Math.round(reviewsValue / 10) }).map(
+        () => ({
+          reviewText: language.commerce.productDescription(),
+          reviewAuthor: language.person.fullName(),
+        })
+      );
+      newBooks.push({ ...baseBook, reviews });
     }
 
     setBooks((prevBooks) => [...prevBooks, ...newBooks]);
@@ -77,19 +91,12 @@ function App() {
     setLoading(false);
   }
 
-  function generateRandomReviews(numberOfReviews, language) {
-    return Array.from({ length: numberOfReviews }).map(() => ({
-      reviewText: language.commerce.productDescription(),
-      reviewAuthor: language.person.fullName(),
-    }));
-  }
-
   function generateISBN() {
     const part1 = "978";
-    const part2 = Math.floor(Math.random() * 9) + 1;
-    const part3 = Math.floor(Math.random() * 900) + 100;
-    const part4 = Math.floor(Math.random() * 90000) + 10000;
-    const part5 = Math.floor(Math.random() * 9) + 1;
+    const part2 = Math.floor(language.number.float() * 9) + 1;
+    const part3 = Math.floor(language.number.float() * 900) + 100;
+    const part4 = Math.floor(language.number.float() * 90000) + 10000;
+    const part5 = Math.floor(language.number.float() * 9) + 1;
 
     return `${part1}-${part2}-${part3}-${part4}-${part5}`;
   }
@@ -123,35 +130,28 @@ function App() {
   }
 
   function handleInputChange(event) {
-    const input = event.target.value;
+    const input = Number(event.target.value);
     setInput(input);
+    setTotalBooks(0);
+    const seedValue = Number(event.target.value);
+    setSeed(seedValue);
+    setPage(1);
+    setBooks([]);
+    setIsFilterClicked(true);
   }
-
-  function handleInputSeed(event) {
-    if (event.key === "Enter") {
-      setTotalBooks(0);
-      const seedValue = Number(event.target.value);
-      setSeed(seedValue);
-      setPage(1);
-      setBooks([]);
-      setIsFilterClicked(true);
-      setEnter(!enter);
-    }
-  }
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    console.log(`trigger at line 157`);
-    generateBooks(20, language, seed);
-  }, [enter]);
 
   function handleSliderChange(event) {
     const value = event.target.value;
-    generateSeed();
     setSliderValue(value);
+    setPage(1);
+    setBooks([]);
+    setTotalBooks(0);
+    setIsFilterClicked(true);
+  }
+
+  function handleSlider2Change(event) {
+    const value = event.target.value;
+    setSlider2Value(value);
     setPage(1);
     setBooks([]);
     setTotalBooks(0);
@@ -160,7 +160,6 @@ function App() {
 
   function increaseReviews() {
     if (reviewValue < 5) {
-      generateSeed();
       setReviewValue(reviewValue + 0.1);
       setPage(1);
       setBooks([]);
@@ -171,7 +170,6 @@ function App() {
 
   function decreaseReviews() {
     if (reviewValue > 0) {
-      generateSeed();
       setReviewValue(reviewValue - 0.1);
       setPage(1);
       setBooks([]);
@@ -199,9 +197,10 @@ function App() {
           input={input}
           inputSeed={inputSeed}
           handleInputChange={handleInputChange}
-          handleInputSeed={handleInputSeed}
           handleSliderChange={handleSliderChange}
+          handleSlider2Change={handleSlider2Change}
           sliderValue={sliderValue}
+          slider2Value={slider2Value}
           reviewValue={reviewValue}
           increaseReviews={increaseReviews}
           decreaseReviews={decreaseReviews}

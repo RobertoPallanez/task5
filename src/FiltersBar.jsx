@@ -49,23 +49,40 @@ function FiltersBar(props) {
           onChange={props.handleSliderChange}
         ></input>
       </div>
-      <div className="scoreBox">
+      {/* <div className="scoreBox">
         <div className="scoreText">
-          <span className="reviewWord">Review:</span>
-          <span className="reviewScore">{props.reviewValue.toFixed(1)}</span>
-        </div>
-        <div className="scoreButtons">
-          <img
+          <span className="reviewWord">Review:</span> */}
+      {/* <span className="reviewScore">{props.reviewValue.toFixed(1)}</span> */}
+      {/* <input
+            type="number"
+            onChange={props.changeReviews}
+            className="reviewScore"
+            value={props.reviewValue}
+          />
+        </div> */}
+      {/* <div className="scoreButtons"> */}
+      {/* <img
             className="upwardsIcon"
             src="./upwardsIcon.svg"
             onClick={props.increaseReviews}
-          />
-          <img
+          /> */}
+      {/* <img
             className="downwardsIcon"
             src="./downwardsIcon.svg"
             onClick={props.decreaseReviews}
           />
         </div>
+      </div> */}
+      <div className="silderBox">
+        <span className="sliderHeader">Reviews: {props.slider2Value / 10}</span>
+        <span className="sliderLines">| | | | | | | | | |</span>
+        <input
+          className="likeSlider"
+          type="range"
+          min="0"
+          max="100"
+          onChange={props.handleSlider2Change}
+        ></input>
       </div>
     </div>
   );
